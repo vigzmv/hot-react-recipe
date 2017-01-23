@@ -1,33 +1,43 @@
 var webpack = require('webpack');
 var path = require('path');
 
-var BUILD_DIR = path.resolve(__dirname, 'docs');
-var APP_DIR = path.resolve(__dirname, 'src');
+module.exports = {
+  debug: true,
+  devtool: '#eval-source-map',
 
-var config = {
-    context: APP_DIR,
-    entry: {
-        javascript: './index.js',
-        // html:'./index.html'
-    },
-    module: {
-        loaders: [
-            {
-                test: /\.jsx?/,
-                include: APP_DIR,
-                loader: 'babel'
-            }
-        ]
-    },
-    output: {
-        path: BUILD_DIR,
-        filename: './main.js',
-        publicPath: '/'+ 'docs' + '/'
-    },
-    devServer: {
-        inline: true
-    },
-    watch: true,
+  context: path.join(__dirname, 'src', 'js'),
+
+  entry: [
+    './main'
+  ],
+
+  output: {
+    path: path.join(__dirname, 'docs','js'),
+    publicPath: '/js/',
+    filename: 'bundle.js'
+  },
+
+  plugins: [
+    new webpack.optimize.OccurenceOrderPlugin(),
+    new webpack.NoErrorsPlugin()
+  ],
+
+  module: {
+    loaders: [
+      {
+        loader: "babel-loader",
+
+        // Only run `.js` and `.jsx` files through Babel
+        test: /\.jsx?$/,
+
+        exclude: /node_modules/,
+
+        // Options to configure babel with
+        query: {
+          plugins: ['transform-runtime'],
+          presets: ['es2015', 'react'],
+        }
+      },
+    ]
+  }
 };
-
-module.exports = config;
