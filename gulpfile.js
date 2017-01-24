@@ -6,21 +6,24 @@ var sass = require('gulp-sass');
 var autoprefixer = require('gulp-autoprefixer');
 var webpack = require('webpack');
 var webpackDevMiddleware = require('webpack-dev-middleware');
-var stripAnsi = require('strip-ansi');
 var webpackConfig = require('./webpack.config');
 var bundler = webpack(webpackConfig);
+var stripAnsi = require('strip-ansi');
 
 var src = {
+    src: './src',
+    dist: './docs',
     sass: 'src/sass/*.sass',
     css: 'docs/css',
+    csss: 'docs/css/*.css',
     pug: 'src/*.pug',
     html: 'docs/*.html'
 };
 
 gulp.task('serve', function() {
     browserSync.init({
-        server: './docs',
-        open: false,
+        server: src.dist,
+        open: true,
         logFileChanges: false,
         middleware: [webpackDevMiddleware(bundler, {
                 publicPath: webpackConfig.output.publicPath,
@@ -33,7 +36,7 @@ gulp.task('serve', function() {
 
     gulp.watch(src.sass, ['sass']);
     gulp.watch(src.pug, ['pug-watch']);
-    gulp.watch('docs/css/*.css', ['auto-prefix']);
+    gulp.watch(src.csss, ['auto-prefix']);
     gulp.watch(src.html).on('change', reload);
 });
 
@@ -45,20 +48,15 @@ gulp.task('sass', function() {
 });
 
 gulp.task('auto-prefix', function() {
-    gulp.src('docs/css/*.css')
+    gulp.src(src.csss)
     .pipe(autoprefixer({browsers: ['last 2 versions'], cascade: false}))
-    .pipe(gulp.dest('docs/css'))
+    .pipe(gulp.dest(src.css))
 });
 
 gulp.task('templates', function() {
-
-    var YOUR_LOCALS = {
-        "message": "This app is powered by gulp.pug recipe for BrowserSync"
-    };
-
     return gulp.src(src.pug)
-    .pipe(pug({locals: YOUR_LOCALS}))
-    .pipe(gulp.dest('./docs/'));
+    .pipe(pug())
+    .pipe(gulp.dest(src.dist + '/'));
 });
 
 bundler.plugin('done', function(stats) {
