@@ -5,7 +5,9 @@ module.exports = {
     debug: true,
     devtool: '#eval-source-map',
     context: path.join(__dirname, 'src', 'js'),
-    entry: ['./main'],
+    entry: [
+        'webpack/hot/dev-server', 'webpack-hot-middleware/client', './main'
+    ],
     output: {
         path: path.join(__dirname, 'docs', 'js'),
         publicPath: '/js/',
@@ -13,12 +15,13 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.OccurenceOrderPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin()
     ],
     module: {
         loaders: [
             {
-                loaders: ['babel'],
+                loaders: ['react-hot', 'babel', 'webpack-module-hot-accept'],
                 test: /\.jsx?$/,
                 exclude: /node_modules/
             }

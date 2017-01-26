@@ -1,14 +1,14 @@
-var gulp = require('gulp');
 var browserSync = require('browser-sync').create();
-var reload = browserSync.reload;
+var gulp = require('gulp');
 var pug = require('gulp-pug');
 var sass = require('gulp-sass');
 var autoprefixer = require('gulp-autoprefixer');
 var webpack = require('webpack');
 var webpackDevMiddleware = require('webpack-dev-middleware');
+var webpackHotMiddleware = require('webpack-hot-middleware');
 var webpackConfig = require('./webpack.config');
 var bundler = webpack(webpackConfig);
-var stripAnsi = require('strip-ansi');
+var reload = browserSync.reload;
 
 var src = {
     src: './src',
@@ -25,13 +25,15 @@ gulp.task('serve', function() {
         server: src.dist,
         open: true,
         logFileChanges: false,
-        middleware: [webpackDevMiddleware(bundler, {
+        middleware: [
+            webpackDevMiddleware(bundler, {
                 publicPath: webpackConfig.output.publicPath,
                 stats: {
                     colors: true
                 }
-            })],
-        plugins: ['bs-fullscreen-message']
+            }),
+            webpackHotMiddleware(bundler)
+        ],
     });
 
     gulp.watch(src.sass, ['sass']);
@@ -59,16 +61,5 @@ gulp.task('templates', function() {
     .pipe(gulp.dest(src.dist + '/'));
 });
 
-bundler.plugin('done', function(stats) {
-    if (stats.hasErrors() || stats.hasWarnings()) {
-        return browserSync.sockets.emit('fullscreen:message', {
-            title: "Webpack Error:",
-            body: stripAnsi(stats.toString()),
-            timeout: 100000
-        });
-    }
-    browserSync.reload();
-});
-
 gulp.task('pug-watch', ['templates'], reload);
-gulp.task('default', ['serve']);
+gulp.task('default', ['serve','templates','sass','auto-prefix']);
